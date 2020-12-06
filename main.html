@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        
+        <script src="http://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+        <script>
+            const ini_rows = 10;
+            let current_row = 0;
+            let current_clmns = 0;
+            let selected = null;
+            $(document).ready(function() {
+                //flush();
+                if(window.localStorage.getItem("last_table") != null){
+                    current_row = window.localStorage.getItem("last_rows");
+                    current_clmns = window.localStorage.getItem("last_cols");
+                    $("#table").html(window.localStorage.getItem("last_table"));
+
+                    add_cell_events();
+                }else{
+                    first_load();
+                    save_data();
+                }
+
+
+                $("#addrow").click(add_row);
+                $("#removerow").click(remove_row);
+                $("#addcol").click(add_col);
+                $("#removecol").click(remove_col);
+
+                $("#table tr td").click(function(e){
+                    selected = e.target;
+                    $("#menu").css("transform", "scale(1, 1)");
+                });
+
+                $("#menu_table tr td").click(function(e) {
+                    $("#menu").css("transform", "scale(0, 0)");
+                    $(selected).css("background-image", $(e.target).css("background-image"));
+                    
+                    save_data();
+                })
+
+                $("#clearbtn").click(function(){
+                    $("#table tr td").css("background-image", "url('')");
+                    save_data();
+                })
+
+            });
+
+            function add_row(){
+                $("#table").append("<tr id='main_row'>" + col_string() + "</tr>");
+                add_cell_events();
+                current_row++;
+                save_data();
+            }
+            function add_col(){
+                $("#table tr").append("<td id='main_cell'></td>");
+                $("#table tr td").click(function(e){
+                    selected = e.target;
+                    $("#menu").css("top", e.clientY - 100 + "px");
+                    $("#menu").css("left", e.clientX - 100 + "px");
+                    $("#menu").css("transform", "scale(1, 1)");
+                });
+                current_clmns++;
+                save_data();
+            }
+
+            function remove_row(){
+                $("#table tr").last().remove();
+                current_row--;
+                save_data();
+            }
+
+            function remove_col(){
+                for(k = 0; k < current_row; k++){
+                    $($("#table tr")[k]).children().last().remove();
+                }
+                current_clmns--;
+                save_data();
+            }
+
+            function col_string(){
+                let string = "";
+                for(i = 0; i < current_clmns; i++){
+                    string += "<td id='main_cell'></td>";
+                }
+                return string;
+            }
+
+            function save_data(){
+                window.localStorage.setItem("last_rows", current_row);
+                window.localStorage.setItem("last_cols", current_clmns);
+                window.localStorage.setItem("last_table", $("#table").html());
+            }
+            function first_load(){
+                current_clmns = 23;
+                for(rows = 0; rows < ini_rows; rows++){
+                    add_row();
+                }
+            }
+            function flush(){
+                window.localStorage.removeItem("last_rows");
+                window.localStorage.removeItem("last_cols");
+                window.localStorage.removeItem("last_table");
+            }
+            function add_cell_events(){
+                $("#table tr td").click(function(e){
+                    selected = e.target;
+                    $("#menu").css("top", e.clientY - 100 + "px");
+                    $("#menu").css("left", e.clientX - 100 + "px");
+                    $("#menu").css("transform", "scale(1, 1)");
+                });
+            }
+        </script>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+        </style>
+        <style>
+            html{
+                overflow: hidden;
+            }
+            #table{
+                position: absolute;
+                box-sizing: border-box;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                height: auto;
+                width: auto;
+            }
+            tr{
+                height: 30px;
+                width: 30px;
+            }
+            td{
+                height: 30px;
+                width: 30px;
+                border: 1px solid #cccccc;
+                line-height: 30px;
+                text-align: center;
+                vertical-align: middle;
+                cursor: default;
+                user-select: none;
+                background-repeat: no-repeat;
+                background-size: 31px 31px;
+            }
+            td:hover{
+                background-color: #ccccdd;
+                border-color: #538fff;
+                cursor: default;
+            }
+            #add_row{
+                position: absolute;
+                bottom: 25px;
+                left: 0px;
+                height: 25px;
+                width: 25px;
+                
+            }
+            #row_tools, #column_tools{
+                position: absolute;
+                right: 0px;
+            }
+            #column_tools{
+                top: 36px;
+            }
+            #tools_wraper{
+                position: absolute;
+                height: 75px;
+                width: 165px;
+                top: 10px;
+                left: 10px;
+            }
+            #row_label, #column_label{
+                position: absolute;
+                left: 0px;
+                line-height: 37.5px;
+                height: 37.5px;
+                width: 100px;
+                text-align: center;
+                vertical-align: middle;
+                font-family: Lobster;
+                font-size: 20px;
+                color: #444444;
+            }
+            #row_label{
+                top: 0px;
+            }
+            #column_label{
+                bottom: 0px;
+            }
+            #menu{
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 240px;
+                width: 160px;
+                transform: scale(0, 0);
+                background-color: white;
+                float: left;
+                flex-flow: wrap;
+                transition: transform .15s ease-in-out;
+                border: 1px solid #999999;
+                z-index: 10;
+            }
+            #menu_table{
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 100%;
+                width: 100%;
+            }
+            #menu_table tr{
+                height: 40px;
+            }
+            #menu_table tr td{
+                background-repeat: no-repeat;
+                background-size: 35px 44px;
+                width: 40px;
+                transition: all .1s ease-in-out;
+            }
+            #menu_table tr td:hover{
+                transform: scale(1.3, 1.3);
+            }
+            #menu_table tr #i1{
+                background-image: url("icons/1.PNG");
+            }
+            #menu_table tr #i2{
+                background-image: url("icons/2.PNG");
+            }
+            #menu_table tr #i3{
+                background-image: url("icons/3.PNG");
+            }
+            #menu_table tr #i4{
+                background-image: url("icons/4.PNG");
+            }
+            #menu_table tr #i5{
+                background-image: url("icons/5.PNG");
+            }
+            #menu_table tr #i6{
+                background-image: url("icons/6.PNG");
+            }
+            #menu_table tr #i7{
+                background-image: url("icons/7.PNG");
+            }
+            #menu_table tr #i8{
+                background-image: url("icons/8.PNG");
+            }
+            #menu_table tr #i9{
+                background-image: url("icons/9.PNG");
+            }
+            #menu_table tr #i10{
+                background-image: url("icons/10.PNG");
+            }
+            #menu_table tr #i11{
+                background-image: url("icons/11.PNG");
+            }
+            #menu_table tr #i12{
+                background-image: url("icons/12.PNG");
+            }
+            #menu_table tr #i13{
+                background-image: url("icons/13.PNG");
+            }
+            #menu_table tr #i14{
+                background-image: url("icons/14.PNG");
+            }
+            #menu_table tr #i15{
+                background-image: url("icons/1.PNG");
+            }
+            #menu_table tr #i16{
+                background-image: url("icons/1.PNG");
+            }
+
+            #clearbtn{
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                height: 30px;
+                width: 75px;
+                border: 1px solid #aaaaaa;
+                font-family: Lobster;
+                color: #444444;
+                line-height: 30px;
+                text-align: center;
+                vertical-align: middle;
+                cursor: default;
+                user-select: none;
+            }
+            #clearbtn:hover{
+                background-color: #538fff;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <div id="clearbtn">Säubern</div>
+        <div id="menu">
+            <table id="menu_table">
+                <tr>
+                    <td id='i1'></td>
+                    <td id='i2'></td>
+                    <td id='i3'></td>
+                    <td id='i4'></td>
+                </tr>
+                <tr>
+                    <td id='i5'></td>
+                    <td id='i6'></td>
+                    <td id='i7'></td>
+                    <td id='i8'></td>
+                </tr>
+                <tr>
+                    <td id='i9'></td>
+                    <td id='i10'></td>
+                    <td id='i11'></td>
+                    <td id='i12'></td>
+                </tr>
+                <tr>
+                    <td id='i13'></td>
+                    <td id='i14'></td>
+                    <td id='i15'></td>
+                    <td id='i16'></td>
+                </tr>
+                <tr>
+                    <td id='clear'></td>
+                </tr>
+            </table>
+        </div>
+
+        <table id="table">
+        </table>
+
+        <div id="tools_wraper">
+            <div id="row_label">Zeilen</div>
+            <div id="column_label">Spalten</div>
+            <table id="row_tools">
+                <tr>
+                    <td id="addrow">
+                        +
+                    </td>
+                    <td id="removerow">
+                        -
+                    </td>
+                </tr>
+            </table>
+            <table id="column_tools">
+                <tr>
+                    <td id="addcol">
+                        +
+                    </td>
+                    <td id="removecol">
+                        -
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </body>
+</html>
